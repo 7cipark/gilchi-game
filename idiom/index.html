@@ -21,4 +21,4 @@ function pick(b,ok,d){if(locked)return;locked=true;[...document.querySelectorAll
 $("next").onclick=()=>{sfx("click");if(idx<9){idx++;show()}else{$("play").classList.add("hidden");$("end").classList.remove("hidden");$("res").textContent="10문제 중 "+score+"개 맞히셨어요!";
  $("resmsg").textContent=score>=9?"한자 박사님이시네요!":score>=6?"아주 잘하셨어요.":"좋은 시작이에요. 다시 하면 더 잘하실 거예요.";sfx(score===10?"win":score>=6?"fin":"bad");if(score>best){best=score;save("best_idiom",best);$("best0").textContent=best}}};
 $("go").onclick=begin;$("again").onclick=begin;
-</script></body></html>
+</script><script data-goatcounter="https://gilchi-game.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body></html>

@@ -165,5 +165,5 @@ document.addEventListener("keydown",e=>{if(!running)return;const k=e.key;
   if(k==="ArrowLeft"){e.preventDefault();mv(-1)}else if(k==="ArrowRight"){e.preventDefault();mv(1)}else if(k==="ArrowDown"){e.preventDefault();down()}else if(k==="ArrowUp"){e.preventDefault();turn()}else if(k===" "){e.preventDefault();drop()}else if(k==="p"||k==="P"){$("bpause").click()}});
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&running&&!paused){paused=true;$("bpause").textContent="계속하기"}});
 </script>
-</body>
+<script data-goatcounter="https://gilchi-game.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script></body>
 </html>
