@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>길치와짐꾼 숫자 야구</title>
+<link rel="stylesheet" href="../common.css"><script src="../common.js"></script>
+<style>
+.slots{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.slot{width:80px;height:90px;border:3px solid var(--main);border-radius:14px;background:#fff;font-size:1.6em;font-weight:700;display:flex;align-items:center;justify-content:center}
+.pad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:8px}
+.pad button{height:70px;font-size:1em;font-weight:700;border:3px solid var(--main);background:#fff;border-radius:14px;cursor:pointer}
+.pad button:active{background:var(--accent)}.pad button:disabled{opacity:.3}
+.hist{margin-top:10px;text-align:left;font-size:.8em;max-height:30vh;overflow:auto}
+.hist div{padding:6px 10px;border-bottom:1px solid #eadfcc}
+.hist b{color:var(--main)}
+</style></head><body><div class="wrap">
+<script>document.write(tools('숫자 야구'))</script>
+<section id="start" class="card"><p class="big">숫자 세 개를<br>맞혀 보세요</p>
+<p>컴퓨터가 서로 다른 숫자 3개를 정했어요.<br>숫자와 자리가 맞으면 <b>스트라이크</b>,<br>숫자만 맞으면 <b>볼</b>이에요.<br>10번 안에 맞히면 성공!</p>
+<p class="small">최고 기록(적은 횟수): <span id="best0">-</span></p><button class="primary" id="go">시작하기</button></section>
+<section id="game" class="hidden"><div style="text-align:center"><span class="pill">도전 <b id="tn">1</b>/10</span></div>
+<div class="slots"><div class="slot" id="s0"></div><div class="slot" id="s1"></div><div class="slot" id="s2"></div></div>
+<div class="pad" id="pad"></div>
+<div class="pad" style="grid-template-columns:1fr 1fr"><button id="del">지우기</button><button id="ok" style="background:var(--main);color:#fff">확인</button></div>
+<div class="msg" id="msg" style="display:block;text-align:center">숫자 3개를 눌러 보세요</div>
+<div class="hist" id="hist"></div></section>
+<section id="end" class="card hidden"><p class="big" id="res"></p><p id="resmsg"></p><button class="primary" id="again">다시 하기</button></section>
+<p class="back"><a href="../">게임방으로 돌아가기</a></p></div>
+<script>
+initTools();
+let ans=[],cur=[],tn=1,best=parseInt(load("best_bb","0"))||0,over=false;$("best0").textContent=best||"-";
+const pad=$("pad");for(let i=0;i<10;i++){const b=document.createElement("button");b.textContent=i;b.dataset.n=i;b.onclick=()=>{if(over||cur.length>=3||cur.includes(i))return;cur.push(i);sfx("click");draw()};pad.appendChild(b)}
+function draw(){for(let i=0;i<3;i++)$("s"+i).textContent=cur[i]!==undefined?cur[i]:"";pad.querySelectorAll("button").forEach(b=>b.disabled=cur.includes(+b.dataset.n))}
+function begin(){ans=shuffle([0,1,2,3,4,5,6,7,8,9]).slice(0,3);cur=[];tn=1;over=false;$("tn").textContent=1;$("hist").innerHTML="";$("msg").textContent="숫자 3개를 눌러 보세요";draw();
+ $("start").classList.add("hidden");$("end").classList.add("hidden");$("game").classList.remove("hidden");sfx("start")}
+$("del").onclick=()=>{if(over)return;cur.pop();sfx("click");draw()};
+$("ok").onclick=()=>{if(over)return;if(cur.length<3){$("msg").textContent="숫자 3개를 모두 골라 주세요";sfx("bad");return}
+ let s=0,b=0;cur.forEach((d,i)=>{if(d===ans[i])s++;else if(ans.includes(d))b++});
+ const r=s===0&&b===0?"아웃":(s?s+"스트라이크 ":"")+(b?b+"볼":"");
+ $("hist").insertAdjacentHTML("afterbegin","<div><b>"+tn+"번째</b>  "+cur.join(" ")+"  →  "+r+"</div>");
+ if(s===3){over=true;sfx("win");setTimeout(()=>finish(true),700);return}
+ sfx(s?"pair":"click");$("msg").textContent=r;cur=[];draw();tn++;
+ if(tn>10){over=true;sfx("bad");setTimeout(()=>finish(false),700);return}$("tn").textContent=tn};
+function finish(w){$("game").classList.add("hidden");$("end").classList.remove("hidden");
+ if(w){const t=tn;$("res").textContent=t+"번 만에 맞히셨어요!";$("resmsg").textContent=t<=5?"대단한 추리력이에요!":"아주 잘하셨어요.";if(!best||t<best){best=t;save("best_bb",best);$("best0").textContent=best}}
+ else{$("res").textContent="아쉬워요";$("resmsg").textContent="정답은 "+ans.join(" ")+" 였어요. 다시 해 볼까요?"}}
+$("go").onclick=begin;$("again").onclick=begin;
+</script></body></html>

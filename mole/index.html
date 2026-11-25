@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>길치와짐꾼 생쥐 잡기</title>
+<link rel="stylesheet" href="../common.css"><script src="../common.js"></script>
+<style>
+.holes{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+.hole{aspect-ratio:1/1;border-radius:50%;background:#5a3a1a;border:5px solid #3b2410;display:flex;align-items:center;justify-content:center;font-size:3em;cursor:pointer;overflow:hidden;position:relative}
+.m{transform:translateY(120%);transition:transform .12s;line-height:1}
+.hole.up .m{transform:translateY(0)}
+.hole.hit{background:#dff3e4}
+</style></head><body><div class="wrap">
+<script>document.write(tools('생쥐 잡기'))</script>
+<section id="start" class="card"><p class="big">쏙 나온<br>생쥐를 잡으세요</p><p>구멍에서 나온 생쥐를 눌러 주세요.<br>모두 20마리가 나와요.<br>천천히 나오니 걱정 마세요.</p>
+<div style="display:flex;gap:8px"><button class="opt" data-s="1500" style="flex:1">느림</button><button class="opt on" data-s="1100" style="flex:1;background:var(--accent)">보통</button><button class="opt" data-s="800" style="flex:1">빠름</button></div>
+<p class="small">최고 점수: <span id="best0">-</span></p><button class="primary" id="go">시작하기</button></section>
+<section id="game" class="hidden"><div style="text-align:center"><span class="pill">잡은 수 <b id="sc">0</b></span><span class="pill">남은 생쥐 <b id="left">20</b></span></div><div class="holes" id="holes"></div></section>
+<section id="end" class="card hidden"><p class="big" id="res"></p><p id="resmsg"></p><button class="primary" id="again">다시 하기</button></section>
+<p class="back"><a href="../">게임방으로 돌아가기</a></p></div>
+<script>
+initTools();
+let speed=1100,sc=0,left=20,idx=-1,timer=null,best=parseInt(load("best_mole","0"))||0,hit=false;$("best0").textContent=best||"-";
+document.querySelectorAll("[data-s]").forEach(b=>b.onclick=()=>{document.querySelectorAll("[data-s]").forEach(x=>{x.style.background="#fff";x.classList.remove("on")});b.style.background="var(--accent)";b.classList.add("on");speed=parseInt(b.dataset.s)});
+const H=$("holes");for(let i=0;i<9;i++){const d=document.createElement("div");d.className="hole";d.innerHTML='<div class="m">🐭</div>';d.onclick=()=>tap(i);H.appendChild(d)}
+function holes(){return H.children}
+function tap(i){if(i!==idx||hit)return;hit=true;sc++;$("sc").textContent=sc;sfx("hit");holes()[i].classList.add("hit")}
+function round(){[...holes()].forEach(h=>h.classList.remove("up","hit"));
+ if(left<=0){finish();return}
+ let n;do{n=Math.floor(Math.random()*9)}while(n===idx);idx=n;hit=false;left--;$("left").textContent=left;holes()[n].classList.add("up");
+ timer=setTimeout(()=>{holes()[n].classList.remove("up");timer=setTimeout(round,350)},speed)}
+function begin(){sc=0;left=20;idx=-1;$("sc").textContent=0;$("left").textContent=20;$("start").classList.add("hidden");$("end").classList.add("hidden");$("game").classList.remove("hidden");sfx("start");clearTimeout(timer);timer=setTimeout(round,800)}
+function finish(){$("game").classList.add("hidden");$("end").classList.remove("hidden");$("res").textContent="20마리 중 "+sc+"마리!";
+ $("resmsg").textContent=sc>=16?"손이 번개 같으세요!":sc>=10?"아주 잘하셨어요.":"좋은 시작이에요. 한 번 더 해 볼까요?";sfx(sc>=10?"win":"fin");if(sc>best){best=sc;save("best_mole",best);$("best0").textContent=best}}
+$("go").onclick=begin;$("again").onclick=begin;
+</script></body></html>

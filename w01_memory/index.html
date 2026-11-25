@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>길치와짐꾼 추억 퀴즈</title>
+<style>
+  :root{--bg:#fff7e8;--ink:#1d1d1d;--main:#8a4b14;--accent:#e0a03a;--ok:#1b7f3b;--bad:#b3261e;--fs:32px}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:"Malgun Gothic","Noto Sans KR",sans-serif;font-size:var(--fs);line-height:1.5}
+  .wrap{max-width:720px;margin:0 auto;padding:16px}
+  header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+  h1{font-size:1.2em;margin:8px 0;color:var(--main)}
+  .tools button{font-size:.65em;padding:8px 14px;margin-left:6px;border:2px solid var(--main);background:#fff;border-radius:12px;cursor:pointer}
+  .card{background:#fff;border:3px solid var(--main);border-radius:18px;padding:20px;margin:14px 0}
+  .progress{font-size:.75em;color:#555}
+  .q{font-size:1.15em;font-weight:700;margin:10px 0 14px}
+  .opt{display:block;width:100%;text-align:left;font-size:1em;padding:18px 16px;margin:12px 0;border:3px solid var(--main);background:#fff;border-radius:16px;cursor:pointer;min-height:64px}
+  .opt:hover,.opt:focus{background:#fbeede;outline:none}
+  .opt.ok{background:#dff3e4;border-color:var(--ok)}
+  .opt.bad{background:#fbe3e0;border-color:var(--bad)}
+  .msg{font-size:.9em;margin-top:12px;padding:14px;border-radius:12px;background:#fff3d6;display:none}
+  .primary{display:block;width:100%;font-size:1.05em;padding:18px;margin-top:16px;border:0;border-radius:16px;background:var(--main);color:#fff;font-weight:700;cursor:pointer;min-height:68px}
+  .center{text-align:center}.big{font-size:1.7em;font-weight:700}.small{font-size:.65em;color:#666}.hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>길치와짐꾼 추억 퀴즈</h1>
+    <div class="tools">
+      <button id="fm" aria-label="글자 작게">가-</button>
+      <button id="fp" aria-label="글자 크게">가+</button>
+      <button id="snd" aria-label="소리 켜기 끄기">소리 켜짐</button>
+    </div>
+  </header>
+
+  <section id="start" class="card center">
+    <p class="big">그 시절을<br>떠올려 보세요</p>
+    <p>시간 제한이 없어요.<br>천천히 풀어 보세요.</p>
+    <p class="small">최고 점수: <span id="best">-</span></p>
+    <button class="primary" id="go">시작하기 (10문제)</button>
+  </section>
+
+  <section id="play" class="card hidden">
+    <div class="progress"><span id="no"></span> &nbsp;|&nbsp; 맞힌 개수 <span id="sc">0</span></div>
+    <div class="q" id="q"></div>
+    <div id="opts"></div>
+    <div class="msg" id="msg"></div>
+    <button class="primary hidden" id="next">다음 문제</button>
+  </section>
+
+  <section id="end" class="card center hidden">
+    <p class="big" id="res"></p>
+    <p id="resmsg"></p>
+    <button class="primary" id="again">다시 하기</button>
+  </section>
+
+  <p id="donate" class="small center hidden">마음에 드셨다면 <a id="donateLink" href="#" target="_blank" rel="noopener" style="color:#8a4b14;font-weight:700">응원하기(선택)</a> &nbsp;·&nbsp; 게임은 계속 무료예요.</p>
+  <p class="small center">길치와짐꾼 채널과 함께하는 추억 퀴즈예요. 즐거운 시간 되세요. 틀려도 괜찮아요.</p>
+</div>
+
+<script>
+/* 문항: [질문, 정답, [오답1, 오답2], 해설] — 모두 널리 알려진 사실만 사용 */
+const DATA=[
+["한국 프로야구가 시작된 해는?","1982년",["1980년","1985년"],"1982년 봄에 프로야구가 개막했어요."],
+["서울 올림픽이 열린 해는?","1988년",["1984년","1992년"],"1988년 서울에서 올림픽이 열렸어요."],
+["경부고속도로가 개통된 해는?","1970년",["1964년","1976년"],"1970년에 서울과 부산이 고속도로로 이어졌어요."],
+["우리나라에서 컬러 TV 방송이 시작된 해는?","1980년",["1975년","1985년"],"1980년에 컬러 TV 방송이 시작됐어요."],
+["KBS가 '이산가족을 찾습니다'를 생방송한 해는?","1983년",["1979년","1987년"],"1983년 생방송은 큰 감동을 남겼어요."],
+["우리나라가 월드컵 4강에 오른 해는?","2002년",["1998년","2006년"],"2002년 한일 월드컵에서 4강에 올랐어요."],
+["서울 올림픽의 마스코트 이름은?","호돌이",["곰두리","수호랑"],"호돌이는 88 서울 올림픽의 마스코트예요."],
+["서울 지하철 1호선이 개통된 해는?","1974년",["1965년","1983년"],"1974년 8월에 서울 지하철 1호선이 개통됐어요."],
+["한글날은 몇 월 며칠일까요?","10월 9일",["10월 3일","10월 15일"],"한글날은 10월 9일이에요. 10월 3일은 개천절이에요."],
+["우리나라 수출이 처음 100억 달러를 넘은 해는?","1977년",["1971년","1983년"],"1977년에 수출 100억 달러를 달성했어요."]
+];
+const $=id=>document.getElementById(id);
+const DONATE_URL=""; /* 후원 링크 주소를 넣으면 하단에 응원하기 링크가 나타납니다 */
+if(DONATE_URL){$("donateLink").href=DONATE_URL;$("donate").classList.remove("hidden")}
+let order=[],idx=0,score=0,sound=true,fs=32,locked=false;
+function load(k,d){try{return localStorage.getItem(k)??d}catch(e){return d}}
+function save(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+fs=parseInt(load("fs_m","32"));document.documentElement.style.setProperty("--fs",fs+"px");
+$("best").textContent=load("best_m","-");
+let AC=null,MG=null;
+function tone(f,t0,d,type,vol){try{if(!AC){AC=new (window.AudioContext||window.webkitAudioContext)();const c=AC.createDynamicsCompressor();c.threshold.value=-10;c.ratio.value=8;const m=AC.createGain();m.gain.value=1.6;c.connect(m);m.connect(AC.destination);MG=c}if(AC.state==="suspended")AC.resume();const o=AC.createOscillator(),g=AC.createGain();o.type=type||"sine";o.frequency.value=f;o.connect(g);g.connect(MG);const s=AC.currentTime+t0;g.gain.setValueAtTime(0.0001,s);g.gain.exponentialRampToValueAtTime(vol||0.4,s+0.015);g.gain.exponentialRampToValueAtTime(0.0001,s+d);o.start(s);o.stop(s+d+0.05)}catch(e){}}
+function bell(f,t0,d,v){tone(f,t0,d,"sine",v);tone(f*2,t0,d*.7,"sine",v*.4);tone(f*3,t0,d*.4,"sine",v*.15)}
+function sfx(k){if(!sound)return;
+  if(k==="ok"){bell(1319,0,.55,.5);bell(1047,.38,.55,.5);bell(1568,.76,1.0,.55)}
+  else if(k==="bad"){tone(150,0,.7,"sawtooth",.45);tone(158,0,.7,"square",.25)}
+  else if(k==="click"){tone(700,0,.08,"square",.14)}
+  else if(k==="start"){bell(523,0,.3,.45);bell(659,.14,.3,.45);bell(784,.28,.6,.5)}
+  else if(k==="win"){[523,659,784,1047,784,1047,1319].forEach((f,i)=>bell(f,i*.17,.45,.55))}
+  else if(k==="win8"){[523,659,784,1047,784,1047,1319].forEach((f,i)=>bell(f,i*.17,.45,.28))}
+  else if(k==="fin"){bell(523,0,.35,.45);bell(659,.22,.35,.45);bell(784,.44,.7,.5)}}
+function beep(ok){sfx(ok?"ok":"bad")}
+function setFs(d){fs=Math.min(42,Math.max(24,fs+d));document.documentElement.style.setProperty("--fs",fs+"px");save("fs_m",fs)}
+$("fm").onclick=()=>setFs(-3);$("fp").onclick=()=>setFs(3);
+sound=load("snd_on","1")==="1";$("snd").textContent=sound?"소리 켜짐":"소리 꺼짐";
+$("snd").onclick=()=>{sound=!sound;save("snd_on",sound?"1":"0");$("snd").textContent=sound?"소리 켜짐":"소리 꺼짐";sfx("ok")};
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function start(){order=shuffle([...DATA.keys()]);idx=0;score=0;$("sc").textContent=0;$("start").classList.add("hidden");$("end").classList.add("hidden");$("play").classList.remove("hidden");show()}
+function show(){locked=false;const d=DATA[order[idx]];$("no").textContent=(idx+1)+" / 10 문제";$("q").textContent=d[0];
+  const opts=shuffle([d[1],...d[2]]);$("opts").innerHTML="";
+  opts.forEach(t=>{const b=document.createElement("button");b.className="opt";b.textContent=t;b.onclick=()=>pick(b,t===d[1],d);$("opts").appendChild(b)});
+  $("msg").style.display="none";$("next").classList.add("hidden")}
+function pick(b,ok,d){if(locked)return;locked=true;
+  [...document.querySelectorAll(".opt")].forEach(x=>{if(x.textContent===d[1])x.classList.add("ok")});
+  if(ok){score++;$("sc").textContent=score;$("msg").textContent="정답이에요! "+d[3]}
+  else{b.classList.add("bad");$("msg").textContent="아쉬워요. 정답은 「"+d[1]+"」예요. "+d[3]}
+  $("msg").style.display="block";beep(ok);$("next").textContent=idx<9?"다음 문제":"결과 보기";$("next").classList.remove("hidden");$("next").focus()}
+$("next").onclick=()=>{sfx("click");if(idx<9){idx++;show()}else finish()};
+function finish(){$("play").classList.add("hidden");$("end").classList.remove("hidden");
+  sfx(score===10?"win":score>=8?"win8":score>=6?"fin":"bad");$("res").style.color=score>=8&&score<10?"#e6a700":"";$("res").style.textShadow=score>=8&&score<10?"0 0 2px #5a3a00,1px 1px 0 #5a3a00":"";$("res").textContent="10문제 중 "+score+"개 맞히셨어요!";
+  $("resmsg").textContent=score>=9?"대단하세요! 추억 박사님이시네요.":score>=6?"아주 잘하셨어요. 한 번 더 해 볼까요?":"좋은 시작이에요. 다시 하면 더 잘하실 거예요.";
+  const b=parseInt(load("best_m","0"))||0;if(score>b){save("best_m",score);$("best").textContent=score}}
+$("go").onclick=()=>{sfx("start");start()};$("again").onclick=()=>{sfx("start");start()};
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>길치와짐꾼 사자성어 퀴즈</title>
+<link rel="stylesheet" href="../common.css"><script src="../common.js"></script></head><body><div class="wrap">
+<script>document.write(tools('사자성어 퀴즈'))</script>
+<section id="start" class="card"><p class="big">뜻을 보고<br>사자성어를 골라요</p><p>10문제예요. 시간 제한이 없어요.<br>틀려도 뜻을 알려 드려요.</p><p class="small">최고 점수: <span id="best0">-</span></p><button class="primary" id="go">시작하기 (10문제)</button></section>
+<section id="play" class="card hidden" style="text-align:left"><div class="small"><span id="no"></span> &nbsp;|&nbsp; 맞힌 개수 <span id="sc">0</span></div><div style="font-size:1.1em;font-weight:700;margin:10px 0 12px" id="q"></div><div id="opts"></div><div class="msg" id="msg"></div><button class="primary hidden" id="next">다음 문제</button></section>
+<section id="end" class="card hidden"><p class="big" id="res"></p><p id="resmsg"></p><button class="primary" id="again">다시 하기</button></section>
+<p class="back"><a href="../">게임방으로 돌아가기</a></p></div>
+<script>
+initTools();
+/* [성어, 한자, 뜻] — 널리 쓰이는 표준 뜻풀이 */
+const D=[["일석이조","一石二鳥","한 가지 일로 두 가지 이익을 얻음"],["우공이산","愚公移山","꾸준히 노력하면 어려운 일도 이룸"],["새옹지마","塞翁之馬","인생의 좋고 나쁨은 예측하기 어려움"],["고진감래","苦盡甘來","고생 끝에 즐거움이 옴"],["호사다마","好事多魔","좋은 일에는 방해되는 일이 많음"],["동고동락","同苦同樂","괴로움과 즐거움을 함께함"],["설상가상","雪上加霜","불행한 일이 겹쳐서 일어남"],["금상첨화","錦上添花","좋은 일 위에 또 좋은 일이 더해짐"],["칠전팔기","七顚八起","여러 번 실패해도 포기하지 않고 일어섬"],["각골난망","刻骨難忘","은혜를 뼈에 새겨 잊지 않음"],["죽마고우","竹馬故友","어릴 때부터 함께 놀며 자란 친구"],["유비무환","有備無患","미리 준비해 두면 걱정할 일이 없음"],["십시일반","十匙一飯","여럿이 조금씩 힘을 모으면 한 사람을 도울 수 있음"],["대기만성","大器晩成","큰 인물은 늦게 이루어짐"],["자업자득","自業自得","자기가 한 일의 결과를 자기가 받음"],["아전인수","我田引水","자기에게 이롭게만 생각하고 행동함"],["학수고대","鶴首苦待","몹시 애타게 기다림"],["천고마비","天高馬肥","하늘은 높고 말이 살찌는 맑은 가을"],["전화위복","轉禍爲福","재앙이 바뀌어 오히려 복이 됨"],["백문불여일견","百聞不如一見","백 번 듣는 것보다 한 번 보는 것이 나음"]];
+let order=[],idx=0,score=0,locked=false,best=parseInt(load("best_idiom","0"))||0;$("best0").textContent=best||"-";
+function begin(){order=shuffle([...D.keys()]).slice(0,10);idx=0;score=0;$("sc").textContent=0;$("start").classList.add("hidden");$("end").classList.add("hidden");$("play").classList.remove("hidden");sfx("start");show()}
+function show(){locked=false;const d=D[order[idx]];$("no").textContent=(idx+1)+" / 10 문제";$("q").textContent="「"+d[2]+"」은(는) 어떤 말일까요?";
+ const wr=shuffle(D.filter(x=>x!==d)).slice(0,2),opts=shuffle([d].concat(wr));$("opts").innerHTML="";
+ opts.forEach(o=>{const b=document.createElement("button");b.className="opt";b.textContent=o[0]+" ("+o[1]+")";b.onclick=()=>pick(b,o===d,d);$("opts").appendChild(b)});$("msg").style.display="none";$("next").classList.add("hidden")}
+function pick(b,ok,d){if(locked)return;locked=true;[...document.querySelectorAll(".opt")].forEach(x=>{if(x.textContent.startsWith(d[0]))x.classList.add("ok")});
+ if(ok){score++;$("sc").textContent=score;$("msg").textContent="정답이에요! "+d[0]+": "+d[2]}else{b.classList.add("bad");$("msg").textContent="아쉬워요. 정답은 「"+d[0]+"」예요. "+d[2]}
+ $("msg").style.display="block";sfx(ok?"ok":"bad");$("next").textContent=idx<9?"다음 문제":"결과 보기";$("next").classList.remove("hidden")}
+$("next").onclick=()=>{sfx("click");if(idx<9){idx++;show()}else{$("play").classList.add("hidden");$("end").classList.remove("hidden");$("res").textContent="10문제 중 "+score+"개 맞히셨어요!";
+ $("resmsg").textContent=score>=9?"한자 박사님이시네요!":score>=6?"아주 잘하셨어요.":"좋은 시작이에요. 다시 하면 더 잘하실 거예요.";sfx(score===10?"win":score>=6?"fin":"bad");if(score>best){best=score;save("best_idiom",best);$("best0").textContent=best}}};
+$("go").onclick=begin;$("again").onclick=begin;
+</script></body></html>

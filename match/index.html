@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"><title>길치와짐꾼 옛 물건 짝 맞추기</title>
+<link rel="stylesheet" href="../common.css"><script src="../common.js"></script>
+<style>
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.cd{aspect-ratio:1/1;border:3px solid var(--main);border-radius:16px;background:var(--accent);font-size:2.2em;display:flex;align-items:center;justify-content:center;cursor:pointer;color:transparent;font-weight:700}
+.cd.up{background:#fff;color:var(--ink)}.cd.done{background:#dff3e4;border-color:var(--ok);color:var(--ink)}
+.cd .lb{position:absolute}
+.cap{font-size:.3em;display:block;color:#444}
+.cdv{text-align:center;line-height:1.1}
+</style></head><body><div class="wrap">
+<script>document.write(tools('옛 물건 짝 맞추기'))</script>
+<section id="start" class="card"><p class="big">같은 그림 두 개를<br>찾아 보세요</p><p>카드를 눌러 뒤집고<br>같은 그림을 맞히면 됩니다.<br>시간 제한은 없어요.</p><p class="small">최소 횟수 기록: <span id="best0">-</span></p><button class="primary" id="go">시작하기</button></section>
+<section id="game" class="hidden"><div style="text-align:center"><span class="pill">뒤집은 횟수 <b id="tries">0</b></span><span class="pill">찾은 짝 <b id="found">0</b>/8</span></div><div class="grid" id="grid"></div></section>
+<section id="end" class="card hidden"><p class="big" id="res"></p><p id="resmsg"></p><button class="primary" id="again">다시 하기</button></section>
+<p class="back"><a href="../">게임방으로 돌아가기</a></p></div>
+<script>
+initTools();
+const ITEMS=[["📻","라디오"],["📺","텔레비전"],["☎️","전화기"],["🚲","자전거"],["⏰","시계"],["📷","사진기"],["☂️","우산"],["🏮","등불"]];
+let cards=[],open=[],tries=0,found=0,lock=false,best=parseInt(load("best_match","0"))||0;
+$("best0").textContent=best||"-";
+function begin(){cards=shuffle(ITEMS.concat(ITEMS));open=[];tries=0;found=0;lock=false;$("tries").textContent=0;$("found").textContent=0;
+ $("grid").innerHTML="";cards.forEach((c,i)=>{const d=document.createElement("div");d.className="cd";d.innerHTML='<div class="cdv">'+c[0]+'<span class="cap">'+c[1]+'</span></div>';d.onclick=()=>flip(i,d);$("grid").appendChild(d)});
+ $("start").classList.add("hidden");$("end").classList.add("hidden");$("game").classList.remove("hidden");sfx("start")}
+function flip(i,d){if(lock||d.classList.contains("up")||d.classList.contains("done"))return;d.classList.add("up");sfx("flip");open.push([i,d]);
+ if(open.length===2){tries++;$("tries").textContent=tries;const [a,b]=open;
+  if(cards[a[0]][0]===cards[b[0]][0]){a[1].classList.replace("up","done");b[1].classList.replace("up","done");open=[];found++;$("found").textContent=found;sfx("pair");if(found===8)setTimeout(finish,700)}
+  else{lock=true;setTimeout(()=>{a[1].classList.remove("up");b[1].classList.remove("up");open=[];lock=false},900)}}}
+function finish(){$("game").classList.add("hidden");$("end").classList.remove("hidden");$("res").textContent="모두 찾으셨어요!";
+ $("resmsg").textContent="뒤집은 횟수 "+tries+"번"+(tries<=14?". 기억력이 대단하세요!":tries<=22?". 아주 잘하셨어요.":". 천천히 해도 괜찮아요.");
+ sfx(tries<=22?"win":"fin");if(!best||tries<best){best=tries;save("best_match",best);$("best0").textContent=best}}
+$("go").onclick=begin;$("again").onclick=begin;
+</script></body></html>
